@@ -1212,3 +1212,19 @@ button.reviews-dot{border:0;padding:0;appearance:none;-webkit-appearance:none}
   .reviews-track{transition:none}
   .faq-answer,.faq-answer-inner,.faq-icon{transition:none}
 }
+
+
+/* ===== Cookie consent (round 269) ===== */
+.cookie-bar{position:fixed;left:16px;right:16px;bottom:16px;margin:0 auto;max-width:780px;z-index:950;background:var(--dark2);color:var(--text-dk);border:1px solid var(--border-dk);border-radius:18px;box-shadow:0 14px 40px rgba(20,18,16,.35);padding:1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;opacity:0;transform:translateY(12px);transition:opacity .25s ease,transform .25s ease}
+.cookie-bar.show{opacity:1;transform:none}
+.cookie-bar[hidden]{display:none}
+.cookie-bar p{flex:1 1 320px;margin:0;font-family:var(--barlow);font-size:.82rem;line-height:1.55;color:var(--text-dk)}
+.cookie-bar a{color:var(--brass);text-decoration:underline;text-underline-offset:2px}
+.cookie-actions{display:flex;gap:.6rem;flex:0 0 auto}
+.cookie-btn{font-family:var(--barlow);font-size:.78rem;font-weight:500;letter-spacing:.04em;min-width:7rem;padding:.7rem 1.4rem;border-radius:999px;cursor:pointer;border:1px solid var(--brass);background:transparent;color:var(--text-dk);transition:background .2s,color .2s}
+.cookie-btn.accept{background:var(--brass);color:#141210}
+@media(hover:hover){.cookie-btn:hover{background:var(--brass);color:#141210}}
+.cookie-settings-link{font-family:var(--barlow);font-size:.66rem;font-weight:300;line-height:inherit;letter-spacing:.08em;color:var(--muted-dk);background:none;border:0;padding:0;cursor:pointer;transition:color .2s}
+@media(hover:hover){.cookie-settings-link:hover{color:var(--gold)}}
+@media(max-width:600px){.cookie-bar{left:10px;right:10px;bottom:10px;padding:.9rem 1rem calc(.9rem + env(safe-area-inset-bottom))}.cookie-actions{width:100%}.cookie-btn{flex:1}}
+@media(prefers-reduced-motion:reduce){.cookie-bar{transition:none}}
