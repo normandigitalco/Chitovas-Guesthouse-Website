@@ -94,7 +94,7 @@ function closeMobileMenu() {
   document.body.style.overflow = '';
 }
 
-// ── GOOGLE MAP (loads only after the visitor clicks) ──
+// ── GOOGLE MAP (loads automatically once the visitor has accepted cookies) ──
 function loadMap() {
   var box = document.getElementById('map-embed');
   if (!box) return;
@@ -103,13 +103,14 @@ function loadMap() {
   f.title = "Map showing Chitova's Guesthouse in Victoria Falls";
   f.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
   f.setAttribute('allowfullscreen', '');
+  f.setAttribute('loading', 'lazy');
   box.innerHTML = ''; box.appendChild(f);
 }
 
 
 // ── COOKIE CONSENT + GOOGLE ANALYTICS (analytics loads only after the visitor presses Accept) ──
 (function () {
-  var GA_ID = 'G-4WJ4EY7W2W', KEY = 'chitova-consent', loaded = false, bar = null;
+  var GA_ID = 'G-4WJ4EY7W2W', KEY = 'chitova-consent', loaded = false, bar = null, hideT = 0;
   function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function set(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
   function loadGA() {
@@ -121,6 +122,10 @@ function loadMap() {
     var s = document.createElement('script');
     s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
     document.head.appendChild(s);
+  }
+  function loadMapIfPresent() {
+    var box = document.getElementById('map-embed');
+    if (box && !box.querySelector('iframe') && typeof loadMap === 'function') loadMap();
   }
   function clearGA() {
     var past = 'expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
@@ -137,7 +142,7 @@ function loadMap() {
   function build() {
     bar = document.createElement('div');
     bar.className = 'cookie-bar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Cookie consent'); bar.hidden = true;
-    bar.innerHTML = '<p>We’d like to use Google Analytics cookies to see which pages are helpful. Nothing is loaded unless you accept. <a href="/privacy-policy/">Privacy Policy</a></p>' +
+    bar.innerHTML = '<p>Help us improve this website by allowing analytics and map cookies. <a href="/privacy-policy/">Privacy Policy</a></p>' +
       '<div class="cookie-actions"><button type="button" class="cookie-btn" data-c="denied">Decline</button><button type="button" class="cookie-btn accept" data-c="granted">Accept</button></div>';
     bar.addEventListener('click', function (e) {
       var b = e.target.closest('button[data-c]'); if (b) choose(b.getAttribute('data-c'));
@@ -146,14 +151,14 @@ function loadMap() {
   }
   function show(focus) {
     if (!bar) build();
-    bar.hidden = false;
+    clearTimeout(hideT); bar.hidden = false;
     requestAnimationFrame(function () { requestAnimationFrame(function () { bar.classList.add('show'); }); });
     if (focus) { var b = bar.querySelector('.accept'); if (b) b.focus(); }
   }
-  function hide() { if (!bar) return; bar.classList.remove('show'); setTimeout(function () { bar.hidden = true; }, 260); }
+  function hide() { if (!bar) return; bar.classList.remove('show'); hideT = setTimeout(function () { bar.hidden = true; }, 260); }
   function choose(v) {
     var prev = get(); set(v); hide();
-    if (v === 'granted') loadGA();
+    if (v === 'granted') { loadGA(); loadMapIfPresent(); }
     else if (loaded || prev === 'granted') { clearGA(); location.reload(); }
   }
   function addFooterLink() {
@@ -164,8 +169,9 @@ function loadMap() {
     box.appendChild(b);
   }
   addFooterLink();
+  window.showCookieSettings = function () { show(true); return false; };
   var c = get();
-  if (c === 'granted') loadGA();
+  if (c === 'granted') { loadGA(); loadMapIfPresent(); }
   else if (c !== 'denied') {
     if (document.readyState === 'complete') show(false);
     else window.addEventListener('load', function () { setTimeout(function () { show(false); }, 600); });
