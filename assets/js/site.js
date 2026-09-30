@@ -105,3 +105,69 @@ function loadMap() {
   f.setAttribute('allowfullscreen', '');
   box.innerHTML = ''; box.appendChild(f);
 }
+
+
+// ── COOKIE CONSENT + GOOGLE ANALYTICS (analytics loads only after the visitor presses Accept) ──
+(function () {
+  var GA_ID = 'G-4WJ4EY7W2W', KEY = 'chitova-consent', loaded = false, bar = null;
+  function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function set(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function loadGA() {
+    if (loaded) return; loaded = true;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false });
+    var s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+  }
+  function clearGA() {
+    var past = 'expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    var host = location.hostname, apex = '.' + host.replace(/^www\./, '');
+    document.cookie.split(';').forEach(function (c) {
+      var n = c.split('=')[0].trim();
+      if (n === '_ga' || n.indexOf('_ga_') === 0) {
+        document.cookie = n + '=;' + past;
+        document.cookie = n + '=;' + past + ';domain=' + host;
+        document.cookie = n + '=;' + past + ';domain=' + apex;
+      }
+    });
+  }
+  function build() {
+    bar = document.createElement('div');
+    bar.className = 'cookie-bar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Cookie consent'); bar.hidden = true;
+    bar.innerHTML = '<p>We’d like to use Google Analytics cookies to see which pages are helpful. Nothing is loaded unless you accept. <a href="/privacy-policy/">Privacy Policy</a></p>' +
+      '<div class="cookie-actions"><button type="button" class="cookie-btn" data-c="denied">Decline</button><button type="button" class="cookie-btn accept" data-c="granted">Accept</button></div>';
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-c]'); if (b) choose(b.getAttribute('data-c'));
+    });
+    document.body.appendChild(bar);
+  }
+  function show(focus) {
+    if (!bar) build();
+    bar.hidden = false;
+    requestAnimationFrame(function () { requestAnimationFrame(function () { bar.classList.add('show'); }); });
+    if (focus) { var b = bar.querySelector('.accept'); if (b) b.focus(); }
+  }
+  function hide() { if (!bar) return; bar.classList.remove('show'); setTimeout(function () { bar.hidden = true; }, 260); }
+  function choose(v) {
+    var prev = get(); set(v); hide();
+    if (v === 'granted') loadGA();
+    else if (loaded || prev === 'granted') { clearGA(); location.reload(); }
+  }
+  function addFooterLink() {
+    var box = document.querySelector('.footer-legal'); if (!box) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'cookie-settings-link'; b.textContent = 'Cookie settings';
+    b.addEventListener('click', function () { show(true); });
+    box.appendChild(b);
+  }
+  addFooterLink();
+  var c = get();
+  if (c === 'granted') loadGA();
+  else if (c !== 'denied') {
+    if (document.readyState === 'complete') show(false);
+    else window.addEventListener('load', function () { setTimeout(function () { show(false); }, 600); });
+  }
+})();
